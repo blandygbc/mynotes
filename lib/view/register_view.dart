@@ -3,14 +3,14 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:mynotes/firebase_options.dart';
 
-class LoginView extends StatefulWidget {
-  const LoginView({Key? key}) : super(key: key);
+class RegisterView extends StatefulWidget {
+  const RegisterView({Key? key}) : super(key: key);
 
   @override
-  State<LoginView> createState() => _LoginViewState();
+  State<RegisterView> createState() => _RegisterViewState();
 }
 
-class _LoginViewState extends State<LoginView> {
+class _RegisterViewState extends State<RegisterView> {
   late final TextEditingController _email;
   late final TextEditingController _password;
 
@@ -54,18 +54,18 @@ class _LoginViewState extends State<LoginView> {
             final email = _email.text;
             final password = _password.text;
             try {
-              final userCredential =
-                  await FirebaseAuth.instance.signInWithEmailAndPassword(
+              final userCredencial =
+                  await FirebaseAuth.instance.createUserWithEmailAndPassword(
                 email: email,
                 password: password,
               );
-              print(userCredential);
+              print(userCredencial);
             } on FirebaseAuthException catch (e) {
               print('Failed with error code: ${e.code}');
               print(e.message);
             }
           },
-          child: const Text('Login'),
+          child: const Text('Register'),
         ),
       ],
     );

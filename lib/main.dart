@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:mynotes/config/routes.dart';
 import 'package:mynotes/firebase_options.dart';
 import 'package:mynotes/view/login_view.dart';
+import 'package:mynotes/view/notes_view.dart';
 import 'package:mynotes/view/verify_email_view.dart';
 
 void main() {
@@ -42,14 +43,13 @@ class HomePage extends StatelessWidget {
             final user = FirebaseAuth.instance.currentUser;
             if (user != null) {
               if (user.emailVerified) {
-                print('Email is verified');
+                return const NotesView();
               } else {
                 return const VerifyEmailView();
               }
             } else {
               return const LoginView();
             }
-            return const Text('Done');
           default:
             return const CircularProgressIndicator();
         }

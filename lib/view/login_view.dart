@@ -1,9 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:mynotes/config/routes.dart';
-import 'package:mynotes/firebase_options.dart';
+import 'package:mynotes/view/notes_view.dart';
 import 'package:mynotes/view/register_view.dart';
+import 'package:mynotes/view/verify_email_view.dart';
 
 class LoginView extends StatefulWidget {
   static String routeName = "/login";
@@ -33,6 +33,7 @@ class _LoginViewState extends State<LoginView> {
 
   @override
   Widget build(BuildContext context) {
+    NavigatorState navigator = Navigator.of(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Login'),
@@ -61,22 +62,33 @@ class _LoginViewState extends State<LoginView> {
               final email = _email.text;
               final password = _password.text;
               try {
-                final userCredential =
-                    await FirebaseAuth.instance.signInWithEmailAndPassword(
+                await FirebaseAuth.instance.signInWithEmailAndPassword(
                   email: email,
                   password: password,
                 );
-                print(userCredential);
+                final user = FirebaseAuth.instance.currentUser;
+                if (user!.emailVerified) {
+                  navigator.pushAndRemoveUntil(
+                    MaterialPageRoute(builder: routes[NotesView.routeName]!),
+                    (route) => false,
+                  );
+                } else {
+                  navigator.pushAndRemoveUntil(
+                    MaterialPageRoute(
+                        builder: routes[VerifyEmailView.routeName]!),
+                    (route) => false,
+                  );
+                }
               } on FirebaseAuthException catch (e) {
-                print('Failed with error code: ${e.code}');
-                print(e.message);
+                debugPrint('Failed with error code: ${e.code}');
+                debugPrint(e.message);
               }
             },
             child: const Text('Login'),
           ),
           TextButton(
             onPressed: () {
-              Navigator.of(context).pushAndRemoveUntil(
+              navigator.pushAndRemoveUntil(
                 MaterialPageRoute(builder: routes[RegisterView.routeName]!),
                 (route) => false,
               );

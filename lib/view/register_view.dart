@@ -1,9 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:mynotes/config/routes.dart';
-import 'package:mynotes/firebase_options.dart';
 import 'package:mynotes/view/login_view.dart';
+import 'package:mynotes/view/verify_email_view.dart';
 
 class RegisterView extends StatefulWidget {
   static String routeName = "/register";
@@ -33,6 +32,7 @@ class _RegisterViewState extends State<RegisterView> {
 
   @override
   Widget build(BuildContext context) {
+    NavigatorState navigator = Navigator.of(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Register'),
@@ -61,15 +61,18 @@ class _RegisterViewState extends State<RegisterView> {
               final email = _email.text;
               final password = _password.text;
               try {
-                final userCredencial =
-                    await FirebaseAuth.instance.createUserWithEmailAndPassword(
+                await FirebaseAuth.instance.createUserWithEmailAndPassword(
                   email: email,
                   password: password,
                 );
-                print(userCredencial);
+                navigator.pushAndRemoveUntil(
+                  MaterialPageRoute(
+                      builder: routes[VerifyEmailView.routeName]!),
+                  (route) => false,
+                );
               } on FirebaseAuthException catch (e) {
-                print('Failed with error code: ${e.code}');
-                print(e.message);
+                debugPrint('Failed with error code: ${e.code}');
+                debugPrint(e.message);
               }
             },
             child: const Text('Register'),

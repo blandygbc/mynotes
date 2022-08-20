@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:mynotes/config/routes.dart';
+import 'package:mynotes/constants/app_constants.dart';
+import 'package:mynotes/utils/exceptions_handlers/show_error_dialog.dart';
 import 'package:mynotes/view/login_view.dart';
 import 'package:mynotes/view/verify_email_view.dart';
 import 'dart:developer' as devtools show log;
@@ -58,6 +60,7 @@ class _RegisterViewState extends State<RegisterView> {
             ),
           ),
           TextButton(
+            child: const Text('Register'),
             onPressed: () async {
               final email = _email.text;
               final password = _password.text;
@@ -66,26 +69,49 @@ class _RegisterViewState extends State<RegisterView> {
                   email: email,
                   password: password,
                 );
-                navigator.pushAndRemoveUntil(
-                  MaterialPageRoute(
-                      builder: routes[VerifyEmailView.routeName]!),
-                  (route) => false,
-                );
+                final user = FirebaseAuth.instance.currentUser;
+                await user?.sendEmailVerification();
+                navigator.pushNamed(VerifyEmailView.routeName);
               } on FirebaseAuthException catch (e) {
                 devtools.log('Failed with error code: ${e.code}');
                 devtools.log(e.message.toString());
+                if (e.code == fireErrCodeWeakPass) {
+                  await showErrorDialog(
+                    context,
+                    'Weak Password.\n${e.message}',
+                  );
+                } else if (e.code == fireErrCodeEmailInUse) {
+                  await showErrorDialog(
+                    context,
+                    'Email already in use.\n${e.message}',
+                  );
+                } else if (e.code == fireErrCodeInvalidEmail) {
+                  await showErrorDialog(
+                    context,
+                    'Email is invalid.\n${e.message}',
+                  );
+                } else {
+                  await showErrorDialog(
+                    context,
+                    'Failed with error code: ${e.code}',
+                  );
+                }
+              } catch (e) {
+                await showErrorDialog(
+                  context,
+                  e.toString(),
+                );
               }
             },
-            child: const Text('Register'),
           ),
           TextButton(
+            child: const Text('Already registered? Login here!'),
             onPressed: () {
               Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(builder: routes[LoginView.routeName]!),
                 (route) => false,
               );
             },
-            child: const Text('Already registered? Login here!'),
           )
         ],
       ),

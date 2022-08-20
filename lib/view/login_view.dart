@@ -61,6 +61,7 @@ class _LoginViewState extends State<LoginView> {
             ),
           ),
           TextButton(
+            child: const Text('Login'),
             onPressed: () async {
               final email = _email.text;
               final password = _password.text;
@@ -108,16 +109,15 @@ class _LoginViewState extends State<LoginView> {
                 );
               }
             },
-            child: const Text('Login'),
           ),
           TextButton(
+            child: const Text('Not registered yet? Register here!'),
             onPressed: () {
               navigator.pushAndRemoveUntil(
                 MaterialPageRoute(builder: routes[RegisterView.routeName]!),
                 (route) => false,
               );
             },
-            child: const Text('Not registered yet? Register here!'),
           )
         ],
       ),

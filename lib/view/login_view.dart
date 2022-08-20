@@ -4,6 +4,7 @@ import 'package:mynotes/config/routes.dart';
 import 'package:mynotes/view/notes_view.dart';
 import 'package:mynotes/view/register_view.dart';
 import 'package:mynotes/view/verify_email_view.dart';
+import 'dart:developer' as devtools show log;
 
 class LoginView extends StatefulWidget {
   static String routeName = "/login";
@@ -80,8 +81,8 @@ class _LoginViewState extends State<LoginView> {
                   );
                 }
               } on FirebaseAuthException catch (e) {
-                debugPrint('Failed with error code: ${e.code}');
-                debugPrint(e.message);
+                devtools.log('Failed with error code: ${e.code}');
+                devtools.log(e.message.toString());
               }
             },
             child: const Text('Login'),

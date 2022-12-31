@@ -1,12 +1,12 @@
+import 'dart:developer' as devtools show log;
+
 import 'package:flutter/material.dart';
 import 'package:mynotes/config/routes.dart';
-import 'package:mynotes/constants/app_constants.dart';
 import 'package:mynotes/services/auth/auth_exceptions.dart';
 import 'package:mynotes/services/auth/auth_service.dart';
 import 'package:mynotes/utils/exceptions_handlers/show_error_dialog.dart';
 import 'package:mynotes/view/login_view.dart';
 import 'package:mynotes/view/verify_email_view.dart';
-import 'dart:developer' as devtools show log;
 
 class RegisterView extends StatefulWidget {
   static String routeName = "/register";

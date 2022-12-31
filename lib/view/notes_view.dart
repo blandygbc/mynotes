@@ -1,11 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:mynotes/config/routes.dart';
+import 'package:mynotes/enums/menu_action.dart';
 import 'dart:developer' as devtools show log;
 
 import 'package:mynotes/view/login_view.dart';
-
-enum MenuAction { logout }
 
 class NotesView extends StatefulWidget {
   static String routeName = '/NotesView';

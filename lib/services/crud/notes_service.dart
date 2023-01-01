@@ -13,12 +13,26 @@ class NotesService {
 
   List<DatabaseNote> _notes = [];
 
+  NotesService._sharedInstance();
+  static final NotesService _shared = NotesService._sharedInstance();
+  factory NotesService() => _shared;
+
   final _notesStreamController =
       StreamController<List<DatabaseNote>>.broadcast();
 
+  Stream<List<DatabaseNote>> get allNotes => _notesStreamController.stream;
+
+  Future<void> _ensureDbIsOpen() async {
+    try {
+      await open();
+    } on DatabaseAlreadyOpenException {
+      //
+    }
+  }
+
   Future<DatabaseUser> getOrCreateUser({required String email}) async {
     try {
-      return await getDatabaseUser(email: email);
+      return await getUser(email: email);
     } on UserNotFoundException {
       return await createUser(email: email);
     } catch (e) {
@@ -67,6 +81,7 @@ class NotesService {
   }
 
   Future<void> deleteUser({required String email}) async {
+    await _ensureDbIsOpen();
     final db = _getDatabaseOrThrow();
     final deletedCount = await db.delete(
       userTable,
@@ -93,6 +108,7 @@ class NotesService {
   }
 
   Future<DatabaseUser> createUser({required String email}) async {
+    await _ensureDbIsOpen();
     final db = _getDatabaseOrThrow();
     bool isUserAlreadyExists = await checkIfUserExistis(email: email, db: db);
     if (isUserAlreadyExists) throw UserAlreadyExistsException();
@@ -101,7 +117,8 @@ class NotesService {
     return DatabaseUser(id: userId, email: email);
   }
 
-  Future<DatabaseUser> getDatabaseUser({required String email}) async {
+  Future<DatabaseUser> getUser({required String email}) async {
+    await _ensureDbIsOpen();
     final db = _getDatabaseOrThrow();
     final results = await findUserByEmail(email: email, db: db);
     if (results.isEmpty) throw UserNotFoundException;
@@ -109,9 +126,10 @@ class NotesService {
   }
 
   Future<DatabaseNote> createNote({required DatabaseUser owner}) async {
+    await _ensureDbIsOpen();
     final db = _getDatabaseOrThrow();
     // make sure owner exists in the database with correct id
-    final dbUser = await getDatabaseUser(email: owner.email);
+    final dbUser = await getUser(email: owner.email);
     if (dbUser != owner) throw UserNotFoundException();
 
     const text = '';
@@ -134,6 +152,7 @@ class NotesService {
   }
 
   Future<void> deleteNote({required int id}) async {
+    await _ensureDbIsOpen();
     final db = _getDatabaseOrThrow();
     final deletedCount = await db.delete(
       noteTable,
@@ -146,6 +165,7 @@ class NotesService {
   }
 
   Future<int> deleteAllNotes() async {
+    await _ensureDbIsOpen();
     final db = _getDatabaseOrThrow();
     final numberOfDeletions = await db.delete(noteTable);
     _notes = [];
@@ -154,6 +174,7 @@ class NotesService {
   }
 
   Future<DatabaseNote> getNote({required int id}) async {
+    await _ensureDbIsOpen();
     final db = _getDatabaseOrThrow();
     final notes = await db.query(
       noteTable,
@@ -175,6 +196,7 @@ class NotesService {
   }
 
   Future<DatabaseNote> updateNote({required DatabaseNote note}) async {
+    await _ensureDbIsOpen();
     final db = _getDatabaseOrThrow();
     await getNote(id: note.id);
     final updatesCount = await db.update(

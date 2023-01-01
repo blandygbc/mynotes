@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mynotes/config/routes.dart';
 import 'package:mynotes/services/auth/auth_service.dart';
-import 'package:mynotes/view/login_view.dart';
-import 'package:mynotes/view/register_view.dart';
+import 'package:mynotes/view/auth/login_view.dart';
+import 'package:mynotes/view/auth/register_view.dart';
 
 class VerifyEmailView extends StatefulWidget {
   static String routeName = '/email-verify';

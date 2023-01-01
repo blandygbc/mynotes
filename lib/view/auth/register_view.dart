@@ -5,8 +5,8 @@ import 'package:mynotes/config/routes.dart';
 import 'package:mynotes/services/auth/auth_exceptions.dart';
 import 'package:mynotes/services/auth/auth_service.dart';
 import 'package:mynotes/utils/exceptions_handlers/show_error_dialog.dart';
-import 'package:mynotes/view/login_view.dart';
-import 'package:mynotes/view/verify_email_view.dart';
+import 'package:mynotes/view/auth/login_view.dart';
+import 'package:mynotes/view/auth/verify_email_view.dart';
 
 class RegisterView extends StatefulWidget {
   static String routeName = "/register";

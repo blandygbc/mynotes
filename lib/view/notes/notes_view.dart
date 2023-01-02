@@ -4,8 +4,6 @@ import 'package:mynotes/config/routes.dart';
 import 'package:mynotes/enums/menu_action.dart';
 import 'package:mynotes/services/auth/auth_service.dart';
 import 'package:mynotes/services/crud/notes_service.dart';
-import 'dart:developer' as devtools show log;
-
 import 'package:mynotes/view/auth/login_view.dart';
 import 'package:mynotes/view/notes/new_notes_view.dart';
 
@@ -29,12 +27,6 @@ class _NotesViewState extends State<NotesView> {
   }
 
   @override
-  void dispose() {
-    _notesService.close();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     NavigatorState navigator = Navigator.of(context);
     return Scaffold(
@@ -51,7 +43,6 @@ class _NotesViewState extends State<NotesView> {
             switch (value) {
               case MenuAction.logout:
                 final shouldLogout = await showLogOutDialog(context);
-                devtools.log(shouldLogout.toString());
                 if (shouldLogout) {
                   await FirebaseAuth.instance.signOut();
                   navigator.pushAndRemoveUntil(
@@ -82,8 +73,25 @@ class _NotesViewState extends State<NotesView> {
                     switch (snapshot.connectionState) {
                       case ConnectionState.waiting:
                       case ConnectionState.active:
-                        return const Text('Loading your notes...');
-
+                        if (snapshot.hasData) {
+                          final allNotes = snapshot.data as List<DatabaseNote>;
+                          return ListView.builder(
+                            itemCount: allNotes.length,
+                            itemBuilder: (context, index) {
+                              final note = allNotes[index];
+                              return ListTile(
+                                title: Text(
+                                  note.text,
+                                  maxLines: 1,
+                                  softWrap: true,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              );
+                            },
+                          );
+                        } else {
+                          return const CircularProgressIndicator();
+                        }
                       default:
                         return const CircularProgressIndicator();
                     }

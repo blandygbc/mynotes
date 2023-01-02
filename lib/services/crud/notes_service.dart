@@ -13,12 +13,17 @@ class NotesService {
 
   List<DatabaseNote> _notes = [];
 
-  NotesService._sharedInstance();
+  NotesService._sharedInstance() {
+    _notesStreamController = StreamController<List<DatabaseNote>>.broadcast(
+      onListen: () {
+        _notesStreamController.sink.add(_notes);
+      },
+    );
+  }
   static final NotesService _shared = NotesService._sharedInstance();
   factory NotesService() => _shared;
 
-  final _notesStreamController =
-      StreamController<List<DatabaseNote>>.broadcast();
+  late final StreamController<List<DatabaseNote>> _notesStreamController;
 
   Stream<List<DatabaseNote>> get allNotes => _notesStreamController.stream;
 
@@ -34,10 +39,16 @@ class NotesService {
     try {
       return await getUser(email: email);
     } on UserNotFoundException {
-      return await createUser(email: email);
-    } catch (e) {
-      devtools.log(e.toString());
+      devtools.log("useless UserNotFoundException catch");
       rethrow;
+    } catch (e) {
+      devtools.log("get user failed");
+      devtools.log("on exception $e");
+      if (UserNotFoundException().toString().compareTo(e.toString()) == 0) {
+        return await createUser(email: email);
+      } else {
+        rethrow;
+      }
     }
   }
 
@@ -63,7 +74,8 @@ class NotesService {
     } on MissingPlatformDirectoryException {
       throw UnableToGetDocumentsDirectoryException();
     } catch (e) {
-      devtools.log(e.toString());
+      devtools.log("Failed to open database,");
+      devtools.log('on exception: $e');
     }
   }
 
@@ -93,12 +105,13 @@ class NotesService {
 
   Future<List<Map<String, Object?>>> findUserByEmail(
       {required String email, required Database db}) async {
-    return await db.query(
+    final result = await db.query(
       userTable,
       limit: 1,
       where: 'email = ?',
       whereArgs: [email.toLowerCase()],
     );
+    return result;
   }
 
   Future<bool> checkIfUserExistis(
@@ -114,7 +127,8 @@ class NotesService {
     if (isUserAlreadyExists) throw UserAlreadyExistsException();
     final userId =
         await db.insert(userTable, {emailColum: email.toLowerCase()});
-    return DatabaseUser(id: userId, email: email);
+    final createdUser = DatabaseUser(id: userId, email: email);
+    return createdUser;
   }
 
   Future<DatabaseUser> getUser({required String email}) async {
@@ -122,7 +136,8 @@ class NotesService {
     final db = _getDatabaseOrThrow();
     final results = await findUserByEmail(email: email, db: db);
     if (results.isEmpty) throw UserNotFoundException;
-    return DatabaseUser.fromRow(results.first);
+    final user = DatabaseUser.fromRow(results.first);
+    return user;
   }
 
   Future<DatabaseNote> createNote({required DatabaseUser owner}) async {
@@ -331,7 +346,7 @@ class DatabaseNote {
 
   @override
   String toString() {
-    return 'DatabaseNote(id: $id, userId: $userId, isSyncedWithCloud: $isSyncedWithCloud), text: $text';
+    return 'DatabaseNote(id: $id, userId: $userId, isSyncedWithCloud: $isSyncedWithCloud, text: $text) ';
   }
 
   @override

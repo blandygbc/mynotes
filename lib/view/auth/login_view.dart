@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:mynotes/config/routes.dart';
 import 'package:mynotes/services/auth/auth_exceptions.dart';
 import 'package:mynotes/services/auth/auth_service.dart';
-import 'package:mynotes/utils/exceptions_handlers/show_error_dialog.dart';
+import 'package:mynotes/utils/dialogs/error_dialog.dart';
 import 'package:mynotes/view/notes/notes_view.dart';
 import 'package:mynotes/view/auth/register_view.dart';
 import 'package:mynotes/view/auth/verify_email_view.dart';

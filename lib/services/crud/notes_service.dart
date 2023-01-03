@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:developer' as devtools show log;
 
 import 'package:flutter/material.dart';
+import 'package:mynotes/extensions/list/filter.dart';
 import 'package:mynotes/services/crud/crud_exceptions.dart';
 import 'package:path/path.dart' show join;
 import 'package:path_provider/path_provider.dart';
@@ -12,6 +13,8 @@ class NotesService {
   Database? _db;
 
   List<DatabaseNote> _notes = [];
+
+  DatabaseUser? _user;
 
   NotesService._sharedInstance() {
     _notesStreamController = StreamController<List<DatabaseNote>>.broadcast(
@@ -25,7 +28,17 @@ class NotesService {
 
   late final StreamController<List<DatabaseNote>> _notesStreamController;
 
-  Stream<List<DatabaseNote>> get allNotes => _notesStreamController.stream;
+  Stream<List<DatabaseNote>> get allNotes =>
+      _notesStreamController.stream.filter(
+        (note) {
+          final currentuser = _user;
+          if (currentuser != null) {
+            return note.userId == currentuser.id;
+          } else {
+            throw UserShouldBeSetBeforeReadingAllNotesException();
+          }
+        },
+      );
 
   Future<void> _ensureDbIsOpen() async {
     try {
@@ -35,9 +48,16 @@ class NotesService {
     }
   }
 
-  Future<DatabaseUser> getOrCreateUser({required String email}) async {
+  Future<DatabaseUser> getOrCreateUser({
+    required String email,
+    bool setAsCurrentUser = true,
+  }) async {
     try {
-      return await getUser(email: email);
+      final user = await getUser(email: email);
+      if (setAsCurrentUser) {
+        _user = user;
+      }
+      return user;
     } on UserNotFoundException {
       devtools.log("useless UserNotFoundException catch");
       rethrow;
@@ -45,7 +65,11 @@ class NotesService {
       devtools.log("get user failed");
       devtools.log("on exception $e");
       if (UserNotFoundException().toString().compareTo(e.toString()) == 0) {
-        return await createUser(email: email);
+        final createdUser = await createUser(email: email);
+        if (setAsCurrentUser) {
+          _user = createdUser;
+        }
+        return createdUser;
       } else {
         rethrow;
       }
@@ -216,12 +240,13 @@ class NotesService {
     final db = _getDatabaseOrThrow();
     await getNote(id: note.id);
     final updatesCount = await db.update(
-      noteTable,
-      {
-        textColumn: text,
-        isSyncedWithCloudColumn: 0,
-      },
-    );
+        noteTable,
+        {
+          textColumn: text,
+          isSyncedWithCloudColumn: 0,
+        },
+        where: 'id=?',
+        whereArgs: [note.id]);
     if (updatesCount == 0) throw CouldNotUpdateNoteException();
     final updatedNote = await getNote(id: note.id);
     _notes.removeWhere((cacheNote) => cacheNote.id == updatedNote.id);

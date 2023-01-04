@@ -1,6 +1,9 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:mynotes/services/auth/auth_service.dart';
-import 'package:mynotes/services/crud/notes_service.dart';
+import 'package:mynotes/services/cloud/cloud_note.dart';
+import 'package:mynotes/services/cloud/firebase_cloud_storage.dart';
 import 'package:mynotes/utils/generics/get_arguments.dart';
 
 class CreateUpdateNoteView extends StatefulWidget {
@@ -12,23 +15,30 @@ class CreateUpdateNoteView extends StatefulWidget {
 }
 
 class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
-  DatabaseNote? _note;
-  late final NotesService _notesService;
+  //DatabaseNote? _note;
+  //late final NotesService _notesService;
+  CloudNote? _cloudNote;
+  late final FirebaseCloudSotrage _cloudStorageService;
   late final TextEditingController _textEditingController;
 
   @override
   void initState() {
-    _notesService = NotesService();
+    //_notesService = NotesService();
+    _cloudStorageService = FirebaseCloudSotrage();
     _textEditingController = TextEditingController();
     super.initState();
   }
 
   void _textControllerListener() async {
-    final note = _note;
+    final note = _cloudNote;
     if (note == null) return;
     final text = _textEditingController.text;
-    await _notesService.updateNote(
-      note: note,
+    // await _notesService.updateNote(
+    //   note: note,
+    //   text: text,
+    // );
+    await _cloudStorageService.updateNote(
+      documentId: note.documentId,
       text: text,
     );
   }
@@ -38,38 +48,46 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
     _textEditingController.addListener(_textControllerListener);
   }
 
-  Future<DatabaseNote> createOrGetNote(BuildContext context) async {
-    final widgetNote = context.getArgument<DatabaseNote>();
+  Future<CloudNote> createOrGetNote(BuildContext context) async {
+    //final widgetNote = context.getArgument<DatabaseNote>();
+    final widgetNote = context.getArgument<CloudNote>();
     if (widgetNote != null) {
-      _note = widgetNote;
+      _cloudNote = widgetNote;
       _textEditingController.text = widgetNote.text;
       return widgetNote;
     }
 
-    final existingNote = _note;
-    if (existingNote != null) return existingNote;
+    // final existingNote = _cloudNote;
+    // if (existingNote != null) return existingNote;
 
-    final owner = await _notesService.getUser(
-      email: AuthService.firebase().currentUser!.email,
-    );
-    final newNote = await _notesService.createNote(owner: owner);
-    _note = newNote;
+    // final owner = await _notesService.getUser(
+    //   email: AuthService.firebase().currentUser!.email,
+    // );
+    // final newNote = await _notesService.createNote(owner: owner);
+    final userId = AuthService.firebase().currentUser!.id;
+    final newNote = await _cloudStorageService.createNote(ownerUserId: userId);
+    _cloudNote = newNote;
     return newNote;
   }
 
   void _deleteEmptyNote() {
-    final note = _note;
+    final note = _cloudNote;
     if (_textEditingController.text.isEmpty && note != null) {
-      _notesService.deleteNote(id: note.id);
+      // _notesService.deleteNote(id: note.id);
+      _cloudStorageService.deleteNote(documentId: note.documentId);
     }
   }
 
   void _saveNoteIfNotEmpty() async {
-    final note = _note;
+    final note = _cloudNote;
     final text = _textEditingController.text;
     if (note != null && text.isNotEmpty) {
-      await _notesService.updateNote(
-        note: note,
+      // await _notesService.updateNote(
+      //   note: note,
+      //   text: text,
+      // );
+      await _cloudStorageService.updateNote(
+        documentId: note.documentId,
         text: text,
       );
     }
@@ -87,7 +105,7 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('New Note'),
+        title: const Text('Your Note'),
       ),
       body: FutureBuilder(
         future: createOrGetNote(context),

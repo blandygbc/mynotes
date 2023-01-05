@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynotes/config/routes.dart';
 import 'package:mynotes/services/auth/auth_service.dart';
+import 'package:mynotes/services/auth/bloc/auth_bloc.dart';
+import 'package:mynotes/services/auth/bloc/auth_event.dart';
 import 'package:mynotes/view/auth/login_view.dart';
 import 'package:mynotes/view/auth/register_view.dart';
 
@@ -30,27 +33,18 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
             \nIf you haven't received a verification email yet, press the button below.'''),
         TextButton(
           child: const Text('Send email verification'),
-          onPressed: () async {
-            await AuthService.firebase().sendEmailVerification();
+          onPressed: () {
+            context.read<AuthBloc>().add(
+                  const AuthEventSendEmailVerification(),
+                );
           },
         ),
         TextButton(
           child: const Text('Restart'),
           onPressed: () async {
-            await AuthService.firebase().logOut();
-            navigator.pushAndRemoveUntil(
-              MaterialPageRoute(builder: routes[RegisterView.routeName]!),
-              (route) => false,
-            );
-          },
-        ),
-        TextButton(
-          child: const Text('Go back to login'),
-          onPressed: () {
-            navigator.pushAndRemoveUntil(
-              MaterialPageRoute(builder: routes[LoginView.routeName]!),
-              (route) => false,
-            );
+            context.read<AuthBloc>().add(
+                  const AuthEventLogOut(),
+                );
           },
         ),
       ]),

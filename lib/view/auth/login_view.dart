@@ -6,6 +6,7 @@ import 'package:mynotes/services/auth/auth_exceptions.dart';
 import 'package:mynotes/services/auth/auth_service.dart';
 import 'package:mynotes/services/auth/bloc/auth_bloc.dart';
 import 'package:mynotes/services/auth/bloc/auth_event.dart';
+import 'package:mynotes/services/auth/bloc/auth_state.dart';
 import 'package:mynotes/utils/dialogs/error_dialog.dart';
 import 'package:mynotes/view/notes/notes_view.dart';
 import 'package:mynotes/view/auth/register_view.dart';
@@ -64,41 +65,40 @@ class _LoginViewState extends State<LoginView> {
               hintText: 'Enter your password here',
             ),
           ),
-          TextButton(
-            child: const Text('Login'),
-            onPressed: () async {
-              final email = _email.text;
-              final password = _password.text;
-              try {
+          BlocListener<AuthBloc, AuthState>(
+            listener: (context, state) async {
+              if (state is AuthStateLoggedOut) {
+                if (state.exception is UserNotFoundAuthException) {
+                  await showErrorDialog(context, 'User not found.');
+                } else if (state.exception is WrongPasswordAuthException) {
+                  await showErrorDialog(context, 'Wrong credentials.');
+                } else if (state.exception is InvalidEmailAuthException) {
+                  await showErrorDialog(context, 'Invalid email');
+                } else if (state.exception is GenericAuthException) {
+                  await showErrorDialog(context, 'Authentication error');
+                } else {
+                  devtools
+                      .log("Login: An exception was thrown ${state.exception}");
+                  await showErrorDialog(
+                    context,
+                    "Unpredicted error occurred",
+                  );
+                }
+              }
+            },
+            child: TextButton(
+              child: const Text('Login'),
+              onPressed: () async {
+                final email = _email.text;
+                final password = _password.text;
                 context.read<AuthBloc>().add(
                       AuthEventLogIn(
                         email,
                         password,
                       ),
                     );
-              } on UserNotFoundAuthException {
-                await showErrorDialog(
-                  context,
-                  'User not found.',
-                );
-              } on WrongPasswordAuthException {
-                await showErrorDialog(
-                  context,
-                  'Wrong credentials.',
-                );
-              } on GenericAuthException {
-                await showErrorDialog(
-                  context,
-                  'Authentication error',
-                );
-              } catch (e) {
-                devtools.log(e.toString());
-                await showErrorDialog(
-                  context,
-                  e.toString(),
-                );
-              }
-            },
+              },
+            ),
           ),
           TextButton(
             child: const Text('Not registered yet? Register here!'),

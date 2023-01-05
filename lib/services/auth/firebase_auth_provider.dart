@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart'
     show FirebaseAuth, FirebaseAuthException;
 import 'package:firebase_core/firebase_core.dart';
-import 'package:mynotes/services/cloud/firebase_errorcodes_constants.dart';
+import 'package:mynotes/services/auth/firebase_errorcodes_constants.dart';
 import 'package:mynotes/firebase_options.dart';
 import 'package:mynotes/services/auth/auth_exceptions.dart';
 import 'package:mynotes/services/auth/auth_provider.dart';
@@ -68,6 +68,8 @@ class FirebaseAuthProvider implements AuthProvider {
         throw UserNotFoundAuthException();
       } else if (e.code == fireErrCodeWrongPass) {
         throw WrongPasswordAuthException();
+      } else if (e.code == fireErrCodeInvalidEmail) {
+        throw InvalidEmailAuthException();
       } else {
         throw GenericAuthException();
       }

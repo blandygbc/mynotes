@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:firebase_auth/firebase_auth.dart'
     show FirebaseAuth, FirebaseAuthException;
 import 'package:firebase_core/firebase_core.dart';
@@ -61,6 +63,7 @@ class FirebaseAuthProvider implements AuthProvider {
       if (user != null) {
         return user;
       } else {
+        log('Login auth provider: UserNotLogeedInAuthException');
         throw UserNotLogeedInAuthException();
       }
     } on FirebaseAuthException catch (e) {
@@ -84,6 +87,7 @@ class FirebaseAuthProvider implements AuthProvider {
     if (user != null) {
       await FirebaseAuth.instance.signOut();
     } else {
+      log('Logout auth provider: UserNotLogeedInAuthException');
       throw UserNotLogeedInAuthException();
     }
   }
@@ -94,6 +98,7 @@ class FirebaseAuthProvider implements AuthProvider {
     if (user != null) {
       await user.sendEmailVerification();
     } else {
+      log('Send email auth provider: UserNotLogeedInAuthException');
       throw UserNotLogeedInAuthException();
     }
   }
@@ -103,5 +108,23 @@ class FirebaseAuthProvider implements AuthProvider {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
+  }
+
+  @override
+  Future<void> sendPasswordReset({required String toEmail}) async {
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: toEmail);
+    } on FirebaseAuthException catch (e) {
+      switch (e.code) {
+        case fireAuthErrCodeInvalidEmail:
+          throw InvalidEmailAuthException();
+        case fireAuthErrCodeUserNotFound:
+          throw UserNotFoundAuthException();
+        default:
+          throw GenericAuthException();
+      }
+    } catch (_) {
+      throw GenericAuthException();
+    }
   }
 }

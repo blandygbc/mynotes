@@ -11,6 +11,7 @@ import 'package:mynotes/view/auth/login_view.dart';
 import 'package:mynotes/view/auth/register_view.dart';
 import 'package:mynotes/view/auth/verify_email_view.dart';
 import 'package:mynotes/view/notes/notes_view.dart';
+import 'package:mynotes/l10n/generated/l10n.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,9 +24,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      supportedLocales: L10n.supportedLocales,
+      localizationsDelegates: L10n.localizationsDelegates,
       title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.teal,
       ),
       home: BlocProvider<AuthBloc>(
         create: (context) => AuthBloc(FirebaseAuthProvider()),

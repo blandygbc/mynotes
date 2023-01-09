@@ -2,6 +2,7 @@ import 'dart:developer' as devtools show log;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mynotes/l10n/generated/l10n.dart';
 import 'package:mynotes/services/auth/auth_exceptions.dart';
 import 'package:mynotes/services/auth/bloc/auth_bloc.dart';
 import 'package:mynotes/services/auth/bloc/auth_event.dart';
@@ -40,20 +41,32 @@ class _LoginViewState extends State<LoginView> {
       listener: (context, state) async {
         if (state is AuthStateLoggedOut) {
           if (state.exception is UserNotFoundAuthException) {
-            await showErrorDialog(context, 'User not found.');
+            await showErrorDialog(
+              context,
+              L10n.of(context).login_error_cannot_find_user,
+            );
           } else if (state.exception is WrongPasswordAuthException) {
-            await showErrorDialog(context, 'Wrong credentials.');
+            await showErrorDialog(
+              context,
+              L10n.of(context).login_error_wrong_credentials,
+            );
           } else if (state.exception is InvalidEmailAuthException) {
-            await showErrorDialog(context, 'Invalid email');
+            await showErrorDialog(
+              context,
+              L10n.of(context).login_error_invalid_email,
+            );
           } else if (state.exception is GenericAuthException) {
-            await showErrorDialog(context, 'Authentication error');
+            await showErrorDialog(
+              context,
+              L10n.of(context).login_error_auth_error,
+            );
           } else {
             if (state.exception != null) {
               devtools.log(
                   "Login view: An exception was thrown ${state.exception}");
               await showErrorDialog(
                 context,
-                "Unpredicted error occurred",
+                L10n.of(context).generic_error_unpredicted,
               );
             }
           }
@@ -61,22 +74,21 @@ class _LoginViewState extends State<LoginView> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Login'),
+          title: Text(L10n.of(context).login),
         ),
         body: Padding(
           padding: const EdgeInsets.all(16.0),
           child: SingleChildScrollView(
             child: Column(
               children: [
-                const Text(
-                    'Login with your credentials below to access your notes'),
+                Text(L10n.of(context).login_view_prompt),
                 const SizedBox(height: 10),
                 TextField(
                   controller: _email,
                   autocorrect: false,
                   keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
-                    hintText: 'Enter your email here',
+                  decoration: InputDecoration(
+                    hintText: L10n.of(context).email_text_field_placeholder,
                   ),
                 ),
                 TextField(
@@ -84,8 +96,8 @@ class _LoginViewState extends State<LoginView> {
                   obscureText: true,
                   enableSuggestions: false,
                   autocorrect: false,
-                  decoration: const InputDecoration(
-                    hintText: 'Enter your password here',
+                  decoration: InputDecoration(
+                    hintText: L10n.of(context).password_text_field_placeholder,
                   ),
                 ),
                 Row(
@@ -105,7 +117,7 @@ class _LoginViewState extends State<LoginView> {
                       },
                     ),
                     TextButton(
-                      child: const Text('Forgot password?'),
+                      child: Text(L10n.of(context).login_view_forgot_password),
                       onPressed: () async {
                         context
                             .read<AuthBloc>()
@@ -115,7 +127,7 @@ class _LoginViewState extends State<LoginView> {
                   ],
                 ),
                 TextButton(
-                  child: const Text('Not registered yet? Register here!'),
+                  child: Text(L10n.of(context).login_view_not_registered_yet),
                   onPressed: () {
                     context.read<AuthBloc>().add(
                           const AuthEventShouldRegister(),

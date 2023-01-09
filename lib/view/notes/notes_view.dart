@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynotes/enums/menu_action.dart';
+import 'package:mynotes/l10n/generated/l10n.dart';
 import 'package:mynotes/services/auth/auth_service.dart';
 import 'package:mynotes/services/auth/bloc/auth_bloc.dart';
 import 'package:mynotes/services/auth/bloc/auth_event.dart';
@@ -10,8 +11,12 @@ import 'package:mynotes/utils/dialogs/logout_dialog.dart';
 import 'package:mynotes/view/notes/create_update_note_view.dart';
 import 'package:mynotes/view/notes/notes_list_view.dart';
 
+extension Count<T extends Iterable> on Stream<T> {
+  Stream<int> get getLength => map((event) => event.length);
+}
+
 class NotesView extends StatefulWidget {
-  static String routeName = '/NotesView';
+  static String routeName = '/notes';
 
   const NotesView({Key? key}) : super(key: key);
 
@@ -37,7 +42,18 @@ class _NotesViewState extends State<NotesView> {
     NavigatorState navigator = Navigator.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Notes'),
+        title: StreamBuilder(
+          stream: _cloudStorageService.allNotes(ownerUserId: userId).getLength,
+          builder: (context, AsyncSnapshot<int> snapshot) {
+            if (snapshot.hasData) {
+              final noteCount = snapshot.data ?? 0;
+              final title = L10n.of(context).notes_title(noteCount);
+              return Text(title);
+            } else {
+              return const Text('My Notes');
+            }
+          },
+        ),
         actions: [
           IconButton(
             onPressed: () {
@@ -54,10 +70,10 @@ class _NotesViewState extends State<NotesView> {
                 }
             }
           }, itemBuilder: (iBContext) {
-            return const [
+            return [
               PopupMenuItem<MenuAction>(
                 value: MenuAction.logout,
-                child: Text('Logout'),
+                child: Text(L10n.of(context).logout),
               )
             ];
           })

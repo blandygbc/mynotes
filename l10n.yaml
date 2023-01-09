@@ -1,0 +1,22 @@
+# folders for the source and target files
+arb-dir: lib/l10n
+output-dir: lib/l10n/generated
+# the template arb file
+template-arb-file: intl_en.arb
+# Name of the output localization file
+# import 'package:count_app/l10n/generated/l10n.dart'
+output-localization-file: l10n.dart
+# Don't generate nullable getters
+# Remove the need to add the '!' at the end: AppLocalizations.of(context)!
+nullable-getter: false
+# Change the name for the localization class using a short one of your choose
+# L10n.of(context) instead of AppLocalizations.of(context)
+output-class: L10n
+# This file show untranslated messages based on model file
+# if you created a new message on model, it'll show you what locales does not have that new message
+# name it as you want
+untranslated-messages-file: l10n_untranslated.txt
+# Prevent flutter to generate the files inside the .dart_tool folder
+# so I can see and 'check in' the code that is generated and is easier to import
+# use 'flutter gen-l10n' to generate the files manually when you need to. Works with running app.
+synthetic-package: false
